@@ -1,0 +1,36 @@
+.idea
+.venv 
+.ipynb_checkpoints
+.mypy_cache
+.vscode
+__pycache__
+.pytest_cache
+htmlcov
+dist
+site
+.coverage*
+coverage.xml
+
+env3.*
+env
+.env 
+.venv 
+memory-bot-ai\data\uploads
+venv
+docs.zip
+archive.zip
+
+
+.cache
+.idea/
+.venv/
+
+# database file
+.DS_Store
+data/chroma_db/
+memory-bot-ai/data/chroma_db/
+# memory-bot-ai/data/uploads/
+# /data/uploads/
+data/chroma_db/chroma.sqlite3
+memory-bot-ai/data/chroma_db/chroma.sqlite3
+

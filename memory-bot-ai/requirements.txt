@@ -1,0 +1,27 @@
+# FastAPI & Server
+fastapi
+uvicorn
+
+# Machine Learning & Embeddings
+torch
+torchvision
+torchaudio
+open_clip_torch
+chromadb
+faiss-cpu
+numpy
+scikit-learn
+
+# AI & LLMs
+google-generativeai=0.8.4
+langchain==0.3.18
+langchain-core==0.3.34
+langchain-community==0.3.17
+langchain-google-genai==2.0.9
+
+# Utilities
+pillow
+tqdm
+jinja2
+python-dotenv
+python-multipart

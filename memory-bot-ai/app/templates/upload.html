@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploads - Conversational Memory Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <h1>Conversational Memory Bot</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/gallery">Gallery</a></li>
+                    <li><a href="/upload" class="active">Uploads</a></li>
+                    <li><a href="/chat">Chat</a></li>
+                    <!-- <li><a href="#about">About</a></li> -->
+                </ul>
+            </nav>
+        </header>
+
+        <main class="upload-container">
+            <h2>Upload Your Images</h2>
+            <p>Select multiple images to upload.</p>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="image-upload" accept="image/*" multiple>
+                <label for="image-upload" class="image-upload-label">📷 Select Images</label>
+                <div id="preview-container" class="preview-container"></div>
+                <div id="upload-status"></div>
+                <button type="submit" class="upload-btn">Upload</button>
+            </form>
+        </main>
+    </div>
+
+    <script>
+
+        const STATUS_MESSAGES = {
+            uploading: "Uploading images...",
+            selectImage: "Please select at least one image to upload.",
+            uploadSuccess: "Successfully uploaded",
+            uploadFailed: "Upload failed: ",
+            unknownError: "Unknown error"
+            };
+            
+        // Preview functionality
+        document.getElementById("image-upload").addEventListener("change", function(event) {
+            let previewContainer = document.getElementById("preview-container");
+            previewContainer.innerHTML = ""; // Clear previous previews
+            
+            for (let file of event.target.files) {
+                let imagePreview = document.createElement("div");
+                imagePreview.classList.add("image-preview");
+                
+                // Create image preview
+                let img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.style.width = "80px";
+                img.style.height = "80px";
+                img.style.objectFit = "cover";
+                
+                // Add file name
+                let fileName = document.createElement("div");
+                fileName.classList.add("file-name");
+                fileName.textContent = file.name;
+                
+                imagePreview.appendChild(img);
+                imagePreview.appendChild(fileName);
+                previewContainer.appendChild(imagePreview);
+            }
+        });
+
+
+        
+
+            // Handle form submission
+        document.getElementById("upload-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const files = document.getElementById("image-upload").files;
+            if (files.length === 0) {
+                showStatus(STATUS_MESSAGES.selectImage, "error");
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append("files", file);
+            }
+
+            showStatus(STATUS_MESSAGES.uploading, "info");
+
+            try {
+                const response = await fetch("/upload-batch", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showStatus(`${STATUS_MESSAGES.uploadSuccess} ${files.length} images!`, "success");
+                    displayUploadedImages(result.uploaded_images);
+                    // Reset the form after successful upload
+                    document.getElementById("upload-form").reset();
+                } else {
+                    showStatus(STATUS_MESSAGES.uploadFailed + (result.detail || STATUS_MESSAGES.unknownError), "error");
+                }
+            } catch (error) {
+                showStatus(STATUS_MESSAGES.uploadFailed + error.message, "error");
+            }
+        });
+
+
+        // Helper function to show status messages
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById("upload-status");
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Helper function to display uploaded images details
+        function displayUploadedImages(images) {
+            const previewContainer = document.getElementById("preview-container");
+            previewContainer.innerHTML = "";
+
+            images.forEach(image => {
+                const imageDiv = document.createElement("div");
+                imageDiv.classList.add("uploaded-image");
+                imageDiv.innerHTML = `
+                    <div class="image-info">
+                        <p><strong>File:</strong> ${image.filename}</p>
+                        <p><strong>ID:</strong> ${image.image_id}</p>
+                        <p><strong>Description:</strong> ${image.description}</p>
+                        <p><strong>Tags:</strong> ${image.tags.join(", ")}</p>
+                    </div>
+                `;
+                previewContainer.appendChild(imageDiv);
+            });
+        }
+    </script>
+
+    <style>
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .status.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .status.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .uploaded-image {
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .image-info p {
+            margin: 5px 0;
+        }
+
+        .file-name {
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 80px;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</body>
+</html>
